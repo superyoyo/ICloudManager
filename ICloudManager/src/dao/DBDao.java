@@ -34,13 +34,13 @@ public class DBDao {
 		while(it.hasNext()){
 			String key = it.next();
 			Object value = params.get(key);
-			if(fileds.length() == 0){
+			if(fileds.length() == 1){
 				fileds.append(" " + key + " ");
 			}else{
 				fileds.append(" , " + key + " ");
 			}
 			
-			if(values.length() == 0){
+			if(values.length() == 1){
 				if(value instanceof String){
 					values.append(" " + value + " ");
 				}else{
@@ -48,9 +48,9 @@ public class DBDao {
 				}
 			}else{
 				if(value instanceof String){
-					values.append(" ," + value + " ");
-				}else{
 					values.append(" ,'" + value + "' ");
+				}else{
+					values.append(" ," + value + " ");
 				}
 			}
 		}
@@ -61,6 +61,8 @@ public class DBDao {
 		sql.append(fileds);
 		sql.append(" values ");
 		sql.append(values);
+		
+		System.out.println("insert sql:" + sql.toString());
 		
 		Connection conn = DBUtil.getConnect();
 		Statement st = conn.createStatement();
@@ -85,7 +87,7 @@ public class DBDao {
      * @return 更新的数据库行数
      * @throws SQLException
      */
-	public static int update(String tableName, HashMap<String, Object> params, String Id, int id) throws SQLException {
+	public static int update(String tableName, HashMap<String, Object> params, String Id, Object id) throws SQLException {
 		StringBuilder sql = new StringBuilder();
 		sql.append("update " + tableName + " ");
 		Iterator<String> it = params.keySet().iterator();
@@ -111,7 +113,14 @@ public class DBDao {
 			}
 		}
 		sql.append(fileds);
-		sql.append(" where "+ Id +"='" + id + "'");
+		if(id instanceof String){
+			sql.append(" where "+ Id +"='" + id + "'");
+		}else{
+			sql.append(" where "+ Id +"=" + id);
+		}
+		
+		
+		System.out.println("update sql:" + sql.toString());
 		
 		Connection conn = DBUtil.getConnect();
 		if(conn != null){
@@ -122,5 +131,28 @@ public class DBDao {
 			return count;
 		}
 		return 0;
+	}
+	
+	public static void main(String[] args) {
+		HashMap<String, Object> insert = new HashMap<String, Object>();
+		insert.put("name", "JackLee");
+		insert.put("password", "12345");
+		insert.put("age", 25);
+		try {
+			DBDao.insert("User", insert);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		HashMap<String, Object> update = new HashMap<String, Object>();
+		update.put("name", "JackLee");
+		update.put("password", "12345");
+		update.put("age", 25);
+		
+		try {
+			DBDao.update("User", insert, "id", 3);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 }
